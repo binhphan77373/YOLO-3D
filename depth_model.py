@@ -16,6 +16,10 @@ class DepthEstimator:
                 device = 'cpu'
         
         self.device = device
+        # Depth scaling parameters to convert from model prediction to real-world cm
+        self.depth_scale_factor = 3.1002
+        self.depth_offset = -0.4657
+        
         print(f"Using device: {self.device} for depth estimation")
         model_map = {
             'small': 'depth-anything/Depth-Anything-V2-Small-hf',
@@ -77,6 +81,19 @@ class DepthEstimator:
         if 0 <= y < depth_map.shape[0] and 0 <= x < depth_map.shape[1]:
             return depth_map[y, x]
         return 0.0
+    
+    def convert_to_real_depth_cm(self, depth_val):
+        """
+        Convert the model's depth prediction to real-world depth in centimeters
+        using the calibrated scale factor and offset.
+        
+        Args:
+            depth_val (float): Raw depth value from the depth map
+            
+        Returns:
+            float: Depth in centimeters
+        """
+        return self.depth_scale_factor * depth_val * 100 + self.depth_offset
     
     def get_depth_in_region(self, depth_map, bbox, method='median'):
         x1, y1, x2, y2 = [int(coord) for coord in bbox]
