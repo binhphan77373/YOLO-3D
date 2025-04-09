@@ -77,6 +77,25 @@ class DepthEstimator:
         colored_depth = cv2.applyColorMap(depth_map_uint8, cmap)
         return colored_depth
     
+    def get_grayscale_inverted_depth(self, depth_map):
+        """
+        Invert the depth map values and convert to grayscale image.
+        This makes far objects darker and near objects brighter.
+        
+        Args:
+            depth_map (numpy.ndarray): Normalized depth map (0-1)
+            
+        Returns:
+            numpy.ndarray: Grayscale inverted depth map (uint8)
+        """
+        # Invert the depth map (far becomes near, near becomes far)
+        inverted_depth = 1.0 - depth_map
+        
+        # Convert to grayscale (0-255)
+        grayscale_depth = (inverted_depth * 255).astype(np.uint8)
+        
+        return grayscale_depth
+    
     def get_depth_at_point(self, depth_map, x, y):
         if 0 <= y < depth_map.shape[0] and 0 <= x < depth_map.shape[1]:
             return depth_map[y, x]

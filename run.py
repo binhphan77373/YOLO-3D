@@ -93,11 +93,19 @@ def main():
         try:
             depth_map = depth_estimator.estimate_depth(original_frame)
             depth_colored = depth_estimator.colorize_depth(depth_map)
+            # Get inverted grayscale depth map
+            depth_gray_inverted = depth_estimator.get_grayscale_inverted_depth(depth_map)
+            # Convert grayscale to BGR for display
+            depth_gray_inverted_display = cv2.cvtColor(depth_gray_inverted, cv2.COLOR_GRAY2BGR)
         except Exception as e:
             print(f"⚠️ Depth Error: {e}")
             depth_map = np.zeros((height, width), dtype=np.float32)
             depth_colored = np.zeros((height, width, 3), dtype=np.uint8)
+            depth_gray_inverted = np.zeros((height, width), dtype=np.uint8)
+            depth_gray_inverted_display = np.zeros((height, width, 3), dtype=np.uint8)
             cv2.putText(depth_colored, "Depth Error", (10, 60),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            cv2.putText(depth_gray_inverted_display, "Depth Error", (10, 60),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         
         # Draw depth value for each detected object
@@ -141,7 +149,8 @@ def main():
         try:
             d_h = height // 4
             d_w = int(d_h * width / height)
-            depth_small = cv2.resize(depth_colored, (d_w, d_h))
+            # Use inverted grayscale depth map instead of colored one
+            depth_small = cv2.resize(depth_gray_inverted_display, (d_w, d_h))
             result_frame[0:d_h, 0:d_w] = depth_small
         except Exception as e:
             print(f"⚠️ Failed to overlay depth map: {e}")
